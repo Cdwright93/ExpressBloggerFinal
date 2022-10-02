@@ -24,3 +24,7 @@ module.exports = {
 	mongoConnect,
 	db,
 };
+
+
+//drop entry from db
+// db.blogs.deleteOne({ id: "5f9f9f9f9f9f9f9f9f9f9f9f" });
