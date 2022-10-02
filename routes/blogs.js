@@ -4,6 +4,9 @@ var router = express.Router();
 
 const { db } = require("../mongo");
 
+//somewhere I'm losing my createdAt, its not the biggest deal, ill find it eventually
+
+
 //post a blog with the following fields
 /*
 title: {string}
@@ -142,7 +145,7 @@ function validatePost(title, text, author, email, categories, starRating) {
 	}
 	return true;
 }
-
+//post a blog WITH VALIDATION
 router.post("/", async (req, res, next) => {
 	const { title, text, author, email, categories, starRating } = req.body;
 	if (
@@ -196,6 +199,45 @@ router.get("/", async (req, res, next) => {
 		res.status(200).json({ message: "Blogs found", blogs });
 	} catch (err) {
 		res.status(500).json({ message: "Blog retrieval failed", err });
+	}
+});
+//put one blog by id
+router.put("/:id", async (req, res, next) => {
+	const id = req.params.id;
+	const { title, text, author, email, categories, starRating } = req.body;
+	if (
+		validatePost(title, text, author, email, categories, starRating) === true
+	) {
+		const lastModified = new Date();
+		const blog = {
+			id: id,
+			title: title,
+			text: text,
+			author: author,
+			email: email,
+			categories: categories[0].split(","),
+			starRating,
+			lastModified,
+		};
+		try {
+			const result = await db()
+				.collection("blogs")
+				.replaceOne({ id: id }, blog);
+			res.status(200).json({ message: "Blog updated", blog });
+		} catch (err) {
+			res.status(500).json({ message: "Blog update failed", err });
+		}
+	} else {
+		res.status(500).json({ message: "Blog update failed" });
+	}
+});
+router.delete("/:id", async (req, res, next) => {
+	const id = req.params.id;
+	try {
+		const result = await db().collection("blogs").deleteOne({ id: id });
+		res.status(200).json({ message: "Blog deleted" });
+	} catch (err) {
+		res.status(500).json({ message: "Blog deletion failed" });
 	}
 });
 
